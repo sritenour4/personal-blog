@@ -12,4 +12,4 @@ const NavBar: React.FC<NavBarProps> = (props) => {
 
 interface NavBarProps {}
 
-export default NavBar;
+export default NavBar;   

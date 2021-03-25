@@ -7,18 +7,38 @@ const Admin: React.FC<AdminProps> = (props) => {
     const [title, setTitle] = React.useState('');
     const [content, setContent] = React.useState('');
 
-    const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    React.useEffect(() => {
+        (async () => {
+            const res = await fetch(`/api/blogs/${blogid}`);
+            const blog = await res.json();
+            setTitle(blog.title);
+            setContent(blog.content);
+        })();
+    }, [blogid]);
+   
+
+    const handleEdit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        const res = await fetch('/api/blogs', {
-            method: 'POST',
+        const res = await fetch(`/api/blogs/${blogid}`, {
+            method: 'PUT',
             headers: {
                 'Content-type': 'application/json'
             },
             body: JSON.stringify({ title, content })
         });
         const result = await res.json();
-        history.push(`/details/${result.id}`);
+        history.push(`/details/${blogid}`);
     }
+
+    const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        const res = await fetch(`/api/blogs/${blogid}`, {
+            method: 'DELETE'
+        });
+        if (res.ok) {
+        history.push('/');
+        }
+    };
 
     return (
         <main className="container">
@@ -41,11 +61,11 @@ const Admin: React.FC<AdminProps> = (props) => {
                             className="form-control form-control-lg mb-2"
                             placeholder="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ...">
                         </textarea>
-                        <div className="d-flex justify-content-between align-items-center">
-                            <Link className="btn btn-outline-secondary btn-lg"to={`/details/${blogid}`}>Go Back</Link>
+                        <div className="d-flex justify-content-between">
+                            <Link className="btn btn-secondary"to={`/details/${blogid}`}>Go Back</Link>
                             <div>
-                            <button onClick={handleSubmit} className="btn btn-primary btn-lg mt-3 mx-3">Edit It!</button>
-                            <button onClick={handleSubmit} className="btn btn-outline-danger btn-lg mt-3 mx-3">Delete It!</button>
+                            <button onClick={handleEdit} className="btn btn-primary mx-2">Edit It!</button>
+                            <button onClick={handleDelete} className="btn btn-outline-danger mx-2">Delete It!</button>
                             </div>
                         </div>
                     </form>

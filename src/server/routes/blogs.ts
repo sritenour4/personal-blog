@@ -18,7 +18,7 @@ router.get('/:blogid?', async (req, res) => {
         }
     } catch (error) {
         console.log(error);
-        res.status(500);
+        res.status(500).send(error);
     }
 });
 
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
         res.json({ msg: 'blog created', id: result.insertId }); // or could just leave res.json(result)
     } catch (error) {
         console.log(error);
-        res.status(500);
+        res.status(500).send(error);
     }
 });
 
@@ -54,14 +54,13 @@ router.put('/:blogid', async (req, res) => {
 
 // DELETE /api/blogs/1
 router.delete('/:blogid', async (req, res) => {
-    const blogid = Number(req.params.blogid);
-    
+    const blogid = Number(req.params.blogid);    
     try {
         const result = await db.blogs.destroy(blogid);
         res.json({ msg: `blog ${blogid} destroyed`, affectedRows: result.affectedRows });
     } catch (error) {
         console.log(error);
-        res.status(500);
+        res.status(500).send(error);
     }
 });
 

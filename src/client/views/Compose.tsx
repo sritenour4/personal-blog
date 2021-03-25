@@ -1,10 +1,25 @@
 import * as React from 'react';
 import {useHistory} from 'react-router-dom';
+import { ITag } from '../utils/types';
 
 const Compose: React.FC<ComposeProps> = (props) => {
     const history = useHistory();
+
+    // form states
     const [title, setTitle] = React.useState('');
     const [content, setContent] = React.useState('');
+    const [selectedTag, setSelectedTag] = React.useState('0');
+
+    // tag state
+    const [tags, setTags] = React.useState<ITag[]>([]);
+
+    React.useEffect(() => {
+        (async () => {
+            const res = await fetch('/api/tags');
+            const tags = await res.json();
+            setTags(tags);
+        })();
+    }, []);
 
     const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
@@ -32,6 +47,13 @@ const Compose: React.FC<ComposeProps> = (props) => {
                             className="form-control form-control-lg mb-2"
                             placeholder="Example Title"
                         />
+                        <label htmlFor="selected tag">Select a Tag</label>
+                        <select value={selectedTag} onChange={e => setSelectedTag(e.target.value)} className="form-control form-control-lg">
+                            <option disabled value="0">Select a tag...</option>
+                            {tags.map(tag => (
+                                <option key={`tag-${tag.id}`} value={tag.id}>{tag.name}</option>
+                            ))}                            
+                        </select>
                         <label htmlFor="content">Content</label>
                         <textarea
                             value={content}

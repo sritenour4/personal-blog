@@ -1,24 +1,48 @@
 import * as React from 'react';
 import { useHistory, useParams, Link } from 'react-router-dom';
+import type { ITag } from '../utils/types';
+
+let oldId: number = null;
 
 const Admin: React.FC<AdminProps> = (props) => {
+    // routing context
     const history = useHistory();
     const { blogid } = useParams();
+
+    // form states
     const [title, setTitle] = React.useState('');
     const [content, setContent] = React.useState('');
+    const [selectedTag, setSelectedTag] = React.useState('0');
 
+    // tags state
+    const [tags, setTags] = React.useState<ITag[]>([]);
+
+    React.useEffect(() => {
+        (async () => {
+            const res = await fetch('/api/tags');
+            const tags = await res.json();
+            setTags(tags);
+        })();
+    }, []);
+    
     React.useEffect(() => {
         (async () => {
             const res = await fetch(`/api/blogs/${blogid}`);
             const blog = await res.json();
+            const res2 = await fetch(`/api/blogtags/${blogid}`);
+            const blogtags = await res2.json();
+            oldId = blogtags[0].id;
+
             setTitle(blog.title);
             setContent(blog.content);
+            setSelectedTag(blogtags[0].id);
         })();
     }, [blogid]);
    
 
     const handleEdit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+
         const res = await fetch(`/api/blogs/${blogid}`, {
             method: 'PUT',
             headers: {
@@ -26,16 +50,33 @@ const Admin: React.FC<AdminProps> = (props) => {
             },
             body: JSON.stringify({ title, content })
         });
-        const result = await res.json();
+        const resultBlog = await res.json();
+        console.log(resultBlog);
+        
+        if(oldId !== Number(selectedTag)) {
+            const res2 = await fetch(`/api/blogtags/${blogid}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({oldId, newId: selectedTag})
+            });
+            const resultBlogtag = await res2.json();
+            console.log(resultBlogtag);
+        }
+
         history.push(`/details/${blogid}`);
-    }
+    };
 
     const handleDelete = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        const res = await fetch(`/api/blogs/${blogid}`, {
+        const res = await fetch(`/api/blogtags/${blogid}`, {
             method: 'DELETE'
         });
-        if (res.ok) {
+        const res2 = await fetch(`/api/blogs/${blogid}`, {
+            method: 'DELETE'
+        });
+        if (res.ok && res2.ok) {
         history.push('/');
         }
     };
@@ -53,6 +94,13 @@ const Admin: React.FC<AdminProps> = (props) => {
                             className="form-control form-control-lg mb-2"
                             placeholder="Example Title"
                         />
+                        <label htmlFor="selected tag">Select a Tag</label>
+                        <select value={selectedTag} onChange={e => setSelectedTag(e.target.value)} className="form-control form-control-lg">
+                            <option disabled value="0">Select a tag...</option>
+                            {tags.map(tag => (
+                                <option key={`tag-${tag.id}`} value={tag.id}>{tag.name}</option>
+                            ))}                            
+                        </select>
                         <label htmlFor="content">Content</label>
                         <textarea
                             value={content}

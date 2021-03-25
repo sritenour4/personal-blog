@@ -13,7 +13,6 @@ const Details: React.FC<DetailsProps> = props => {
         (async () => {
             const res = await fetch(`/api/blogs/${blogid}`);
             const blog = await res.json();
-
             const res2 = await fetch(`/api/blogtags/${blogid}`);
             const blogtags = await res2.json();
 

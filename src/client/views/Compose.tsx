@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useHistory} from 'react-router-dom';
-import { ITag } from '../utils/types';
+import type { ITag } from '../utils/types';
 
 const Compose: React.FC<ComposeProps> = (props) => {
     const history = useHistory();
@@ -30,8 +30,21 @@ const Compose: React.FC<ComposeProps> = (props) => {
             },
             body: JSON.stringify({title, content})
         });
-        const result = await res.json();
-        history.push(`/details/${result.id}`);
+        const blogResult = await res.json();
+        
+        // if (Number(selectedTag)) {
+        const res2 = await fetch('/api/blogtags', {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: JSON.stringify({blogid: blogResult.id, tagid: selectedTag})
+        });
+        const blogtagResult = await res2.json();
+        console.log(blogtagResult);
+    // };
+
+        history.push(`/details/${blogResult.id}`);
     }
 
     return (
